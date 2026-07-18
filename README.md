@@ -103,15 +103,21 @@ This is a **Code Composer Studio** managed-build project (Eclipse CDT), not a st
 
 1. **Vector table misplaced under TI Arm Clang.** The startup file placed `g_pfnVectors` with the legacy `#pragma DATA_SECTION(g_pfnVectors, ".intvecs")`. TI Arm Clang doesn't support that pragma and silently drops it, so the vector table landed wherever the compiler's default section allocation put it instead of address `0x00000000` — an image that links without error but doesn't boot. Fixed by switching to `__attribute__((section(".intvecs")))`, which the linker now places correctly at `0x0` (verified against the link map).
 
+2. **`PF0` (SW2) button now responds.** `PF0` shares its pin with the TM4C123's NMI function and is **locked by default**, so `Port_Init` could never drive it — the root cause of the button-1 failure the team flagged in their original submission. `Port_Init` now unlocks the pin through the GPIO commit register before configuring it:
+   ```c
+   GPIO_PORTF_LOCK_R = GPIO_LOCK_KEY;   // unlock the commit (GPIOCR) register
+   GPIO_PORTF_CR_R  |= GPIO_PIN_0;      // allow changes to PF0
+   GPIO_PORTF_LOCK_R = 0;               // re-lock
+   ```
+   (A well-known Tiva C gotcha, shared by `PD7`.)
+
 ### Known issues (not yet fixed)
 
 These were found by reading the code, not by running it on hardware.
 
-1. **`PF0` (SW2) button doesn't respond.** `PF0` shares its pin with the TM4C123's NMI function and is **locked by default**; `Port_Init` never unlocks it. This is a well-known Tiva C gotcha (shared by `PD7`) and the likely root cause of the button-1 failure noted in the original team's submission.
+1. **`Pedestrian_Crossing`'s second branch reads the wrong pin.** It tests `GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_3)` — `PA3` is configured as an **LED output**, not the second push button (`PF4`). As written, the branch reacts to an LED's output state rather than a button press.
 
-2. **`Pedestrian_Crossing`'s second branch reads the wrong pin.** It tests `GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_3)` — `PA3` is configured as an **LED output**, not the second push button (`PF4`). As written, the branch reacts to an LED's output state rather than a button press.
-
-3. **`Timer_Delay` polls the wrong timer's registers.** It configures and enables `TIMER1_BASE`, but clears/polls `TIMER0_ICR_R` / `TIMER0_RIS_R` directly — registers belonging to Timer0, the independent 1 Hz system tick. The delay only appears to work because Timer0 happens to also cycle roughly once per second; it isn't actually gated on Timer1 at all.
+2. **`Timer_Delay` polls the wrong timer's registers.** It configures and enables `TIMER1_BASE`, but clears/polls `TIMER0_ICR_R` / `TIMER0_RIS_R` directly — registers belonging to Timer0, the independent 1 Hz system tick. The delay only appears to work because Timer0 happens to also cycle roughly once per second; it isn't actually gated on Timer1 at all.
 
 ### Further improvements (not yet applied)
 

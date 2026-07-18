@@ -31,6 +31,11 @@ void Port_Init(void)
     GPIOPinTypeGPIOOutput(GPIO_PORTD_BASE,GPIO_PIN_6); //first traffic yellow LED
     GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE,GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7); //first traffic green LED and second traffic red, yellow and green LEDs
 
+    /*unlock PF0 (NMI-shared pin, locked by default) before using it as GPIO*/
+    GPIO_PORTF_LOCK_R = GPIO_LOCK_KEY;   //unlock the GPIO commit (GPIOCR) register
+    GPIO_PORTF_CR_R  |= GPIO_PIN_0;      //allow changes to PF0
+    GPIO_PORTF_LOCK_R = 0;               //re-lock the commit register
+
     /*set input pins*/
     GPIOPinTypeGPIOInput(GPIO_PORTF_BASE,GPIO_PIN_4);  //tiva C included push button
     GPIOPinTypeGPIOInput(GPIO_PORTF_BASE,GPIO_PIN_0);  //tiva C included push button
