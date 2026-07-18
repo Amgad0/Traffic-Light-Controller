@@ -115,12 +115,11 @@ void Timer_Delay(void)
 
   TimerLoadSet(TIMER1_BASE, TIMER_A, 16000000); //load the timer value
 
-  TIMER0_ICR_R = 0x01;  //set flag for the timer and enable it
+  TIMER1_ICR_R = 0x01;  //clear Timer1A timeout flag before starting
 
 
   TimerEnable(TIMER1_BASE, TIMER_A); //Enable timer1A
 
    /*    Set the timer to count 1 second */
-   TimerEnable(TIMER1_BASE, TIMER_A);
-   while((TIMER0_RIS_R & 0x1) == 0){}
+   while((TIMER1_RIS_R & 0x1) == 0){}  //wait for Timer1A timeout
 }

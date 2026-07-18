@@ -113,11 +113,7 @@ This is a **Code Composer Studio** managed-build project (Eclipse CDT), not a st
 
 3. **`Pedestrian_Crossing`'s second branch reads the correct button.** It previously tested `GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_3)` — `PA3` is an **LED output**, not the second push button — so it reacted to an LED's own output state instead of a press. It now reads `GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_4)`.
 
-### Known issues (not yet fixed)
-
-These were found by reading the code, not by running it on hardware.
-
-1. **`Timer_Delay` polls the wrong timer's registers.** It configures and enables `TIMER1_BASE`, but clears/polls `TIMER0_ICR_R` / `TIMER0_RIS_R` directly — registers belonging to Timer0, the independent 1 Hz system tick. The delay only appears to work because Timer0 happens to also cycle roughly once per second; it isn't actually gated on Timer1 at all.
+4. **`Timer_Delay` polls the timer it actually configures.** It set up and enabled `TIMER1_BASE` but cleared/polled `TIMER0_ICR_R` / `TIMER0_RIS_R` — Timer0's registers (Timer0 is the independent 1 Hz system tick), so the delay was never genuinely gated on Timer1. It now uses `TIMER1_ICR_R` / `TIMER1_RIS_R`, and a redundant duplicate `TimerEnable` call was removed.
 
 ### Further improvements (not yet applied)
 
