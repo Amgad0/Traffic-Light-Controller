@@ -70,7 +70,7 @@ void Pedestrian_Crossing(void)
 
             /*If condition loop for 2 times to delay 2 seconds     */
             int i;
-            for(i = 0; i<2 ;i++)
+            for(i = 0; i < PEDESTRIAN_CROSS_S ;i++)
                 {
                    Timer_Delay();   //wait for 1 second
                 }
@@ -86,7 +86,7 @@ void Pedestrian_Crossing(void)
 
             /*If condition loop for 2 times to delay 2 seconds     */
             int i;
-            for(i = 0; i<2 ;i++)
+            for(i = 0; i < PEDESTRIAN_CROSS_S ;i++)
                 {
                     Timer_Delay();                  //wait for 1 second
                 }

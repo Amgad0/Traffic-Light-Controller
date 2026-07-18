@@ -9,7 +9,7 @@
 #include "GPTM.h"
 
 int counter = 0;  //variable which the timer ISR increments
-int switch_traffic = 0;    //variable to switch from traffic 1 to 2
+int switch_traffic = TRAFFIC_1;    //variable to switch from traffic 1 to 2
 
 void Init_TimerInt(void)
 {
@@ -22,7 +22,7 @@ void Init_TimerInt(void)
     TimerConfigure(TIMER0_BASE,TIMER_CFG_A_PERIODIC_UP);
     TimerClockSourceSet(TIMER0_BASE,TIMER_CLOCK_SYSTEM);
 
-    TimerLoadSet(TIMER0_BASE,TIMER_A,16000000);   //set load values
+    TimerLoadSet(TIMER0_BASE,TIMER_A,TIMER_ONE_SEC_LOAD);   //set load values
     TimerIntRegister(TIMER0_BASE, TIMER_A, Timer0_Handler);  //set timer ISR function name
     TimerIntEnable(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
 
@@ -34,9 +34,9 @@ void Init_TimerInt(void)
 void Timer0_Handler(void)
 {
     /*loop for 7 seconds on traffic 1 */
-    if(switch_traffic == 0)
+    if(switch_traffic == TRAFFIC_1)
         {
-          if( counter == 0 && switch_traffic == 0)
+          if( counter == TICK_GREEN && switch_traffic == TRAFFIC_1)
           {
              GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_6 | GPIO_PIN_7, 0x0);
              GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7,
@@ -45,14 +45,14 @@ void Timer0_Handler(void)
              GPIOPinWrite(GPIO_PORTA_BASE,GPIO_PIN_4, 0x0);
              GPIOPinWrite(GPIO_PORTA_BASE,GPIO_PIN_2|GPIO_PIN_3,GPIO_PIN_2);
           }
-          if( counter == 5 && switch_traffic == 0 )                                                             //wait for 5 seconds
+          if( counter == TICK_YELLOW && switch_traffic == TRAFFIC_1 )                                                             //wait for 5 seconds
           {
               GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_6 | GPIO_PIN_7, GPIO_PIN_6);   //Yellow light traffic 1 is ON
               GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7, GPIO_PIN_6); //1st traffic Green light OFF and 2nd traffic RED light ON, yellow and green ligh OFF
               GPIOPinWrite(GPIO_PORTB_BASE,GPIO_PIN_2 | GPIO_PIN_3 , GPIO_PIN_3);  //Pedestrian red light ON
               GPIOPinWrite(GPIO_PORTA_BASE,GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4,GPIO_PIN_2); //1st traffic Red light ON
           }
-          if( counter == 7 && switch_traffic == 0 )                                                             //wait for 2 more seconds
+          if( counter == TICK_RED && switch_traffic == TRAFFIC_1 )                                                             //wait for 2 more seconds
           {
              GPIOPinWrite(GPIO_PORTA_BASE,GPIO_PIN_4, GPIO_PIN_4); //Red light traffic 1 is ON
              GPIOPinWrite(GPIO_PORTD_BASE,GPIO_PIN_6, 0x0);   //Yellow light is off
@@ -62,23 +62,23 @@ void Timer0_Handler(void)
           }
         }
      /*loop for 7 seconds on traffic 2 */
-     else if(switch_traffic == 1)  //check 1 flag
+     else if(switch_traffic == TRAFFIC_2)  //check 1 flag
         {
-          if( counter == 0 && switch_traffic == 1)
+          if( counter == TICK_GREEN && switch_traffic == TRAFFIC_2)
           {
              GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7, GPIO_PIN_4);           //Green light traffic 2 is ON
              GPIOPinWrite(GPIO_PORTD_BASE,GPIO_PIN_6, 0x0);      //Red light traffic 2 is OFF
              GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_3 , GPIO_PIN_3);
              GPIOPinWrite(GPIO_PORTA_BASE,GPIO_PIN_4, GPIO_PIN_4);
           }
-          if( counter == 5 && switch_traffic == 1 )                                                             //wait for 5 seconds
+          if( counter == TICK_YELLOW && switch_traffic == TRAFFIC_2 )                                                             //wait for 5 seconds
           {
               GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7, GPIO_PIN_5);           //Yellow light traffic 2 is ON
               GPIOPinWrite(GPIO_PORTD_BASE,GPIO_PIN_6, 0x0);
               GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_3 , GPIO_PIN_3);
               GPIOPinWrite(GPIO_PORTA_BASE,GPIO_PIN_4, GPIO_PIN_4);
           }
-          if( counter == 7 && switch_traffic == 1 )                                        //wait for 2 more seconds
+          if( counter == TICK_RED && switch_traffic == TRAFFIC_2 )                                        //wait for 2 more seconds
           {
               GPIOPinWrite(GPIO_PORTC_BASE, GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7, GPIO_PIN_6);          //Red light traffic 2 is ON
               GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_3 , GPIO_PIN_3);
@@ -87,16 +87,16 @@ void Timer0_Handler(void)
         }
     counter++;  //increment counter
 
-     if (counter == 8 && switch_traffic == 0) //delay 1 second after the traffic 1 finishes
+     if (counter == TICK_HANDOVER && switch_traffic == TRAFFIC_1) //delay 1 second after the traffic 1 finishes
      {
        counter =0;                     //reset counter to 0
-       switch_traffic = 1;             //set the switch_traffic to 1
+       switch_traffic = TRAFFIC_2;             //set the switch_traffic to 1
      }
 
-     if (counter == 8 && switch_traffic == 1) // delay 1 second after the traffic 2 finishes
+     if (counter == TICK_HANDOVER && switch_traffic == TRAFFIC_2) // delay 1 second after the traffic 2 finishes
      {
        counter =0;                //reset counter to 0
-       switch_traffic = 0;        //reset switch_traffic to 0
+       switch_traffic = TRAFFIC_1;        //reset switch_traffic to 0
      }
 
      TimerIntClear(TIMER0_BASE, TIMER_TIMA_TIMEOUT);
@@ -113,7 +113,7 @@ void Timer_Delay(void)
 
   TimerConfigure(TIMER1_BASE, (TIMER_CFG_PERIODIC)); //Set the type of the timer to periodic
 
-  TimerLoadSet(TIMER1_BASE, TIMER_A, 16000000); //load the timer value
+  TimerLoadSet(TIMER1_BASE, TIMER_A, TIMER_ONE_SEC_LOAD); //load the timer value
 
   TIMER1_ICR_R = 0x01;  //clear Timer1A timeout flag before starting
 

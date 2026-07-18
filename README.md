@@ -115,13 +115,13 @@ This is a **Code Composer Studio** managed-build project (Eclipse CDT), not a st
 
 4. **`Timer_Delay` polls the timer it actually configures.** It set up and enabled `TIMER1_BASE` but cleared/polled `TIMER0_ICR_R` / `TIMER0_RIS_R` — Timer0's registers (Timer0 is the independent 1 Hz system tick), so the delay was never genuinely gated on Timer1. It now uses `TIMER1_ICR_R` / `TIMER1_RIS_R`, and a redundant duplicate `TimerEnable` call was removed.
 
+5. **Magic numbers replaced with named constants.** Pin-cycle tick thresholds, the traffic-direction selector, the pedestrian crossing duration, and the `16000000` timer load value were inlined throughout `GPTM.c`. They're now named in `GPTM.h` (`TICK_GREEN`/`TICK_YELLOW`/`TICK_RED`/`TICK_HANDOVER`, `TRAFFIC_1`/`TRAFFIC_2`, `PEDESTRIAN_CROSS_S`, `TIMER_ONE_SEC_LOAD`), making the state machine in `Timer0_Handler` self-documenting and easy to retune.
+
 ### Further improvements (not yet applied)
 
 - **Blocking delay inside an ISR.** `Pedestrian_Crossing` busy-waits for ~2 seconds inside GPIO interrupt context, holding off any interrupt of equal or lower priority for that entire window. A cleaner design would fold the pedestrian phase into the same `Timer0_Handler` tick-driven state machine (e.g. a `pedestrian_request` flag consumed on the next 1 Hz tick), removing the second timer and the nested blocking wait entirely.
 
 - **Resume semantics don't match the spec.** The assignment calls for resuming the *remaining* seconds of the interrupted vehicle phase after a pedestrian crossing (e.g., interrupted after 2 of 5 green seconds → resume with 3 seconds left). The current implementation just delays 2 seconds and lets the normal cycle carry on from wherever `counter` happens to be, rather than accounting for elapsed time.
-
-- **Magic numbers throughout.** Pin masks, the `16000000` timer load values (implicitly assuming the default 16 MHz clock), and phase durations (`5`, `2`, `7`, `8`) are inlined rather than named. Naming these would make the state machine in `Timer0_Handler` considerably easier to follow and to retune.
 
 - **Non-`volatile` shared state.** `counter` and `switch_traffic` (`GPTM.c`) are written from `Timer0_Handler` and read across ISR/refactor boundaries without a `volatile` qualifier — harmless today given how the compiler happens to treat them, but worth adding for correctness if the code is optimized or restructured.
 
