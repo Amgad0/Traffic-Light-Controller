@@ -31,6 +31,11 @@ void Port_Init(void)
     GPIOPinTypeGPIOOutput(GPIO_PORTD_BASE,GPIO_PIN_6); //first traffic yellow LED
     GPIOPinTypeGPIOOutput(GPIO_PORTC_BASE,GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7); //first traffic green LED and second traffic red, yellow and green LEDs
 
+    /*unlock PF0 (NMI-shared pin, locked by default) before using it as GPIO*/
+    GPIO_PORTF_LOCK_R = GPIO_LOCK_KEY;   //unlock the GPIO commit (GPIOCR) register
+    GPIO_PORTF_CR_R  |= GPIO_PIN_0;      //allow changes to PF0
+    GPIO_PORTF_LOCK_R = 0;               //re-lock the commit register
+
     /*set input pins*/
     GPIOPinTypeGPIOInput(GPIO_PORTF_BASE,GPIO_PIN_4);  //tiva C included push button
     GPIOPinTypeGPIOInput(GPIO_PORTF_BASE,GPIO_PIN_0);  //tiva C included push button
@@ -65,7 +70,7 @@ void Pedestrian_Crossing(void)
 
             /*If condition loop for 2 times to delay 2 seconds     */
             int i;
-            for(i = 0; i<2 ;i++)
+            for(i = 0; i < PEDESTRIAN_CROSS_S ;i++)
                 {
                    Timer_Delay();   //wait for 1 second
                 }
@@ -74,14 +79,14 @@ void Pedestrian_Crossing(void)
 
         }
     /*    If condition check the press on button 2 while button 1 is off and flag is 0     */
-    else if ( (GPIOPinRead(GPIO_PORTA_BASE,GPIO_PIN_3)) == 0)
+    else if ( (GPIOPinRead(GPIO_PORTF_BASE,GPIO_PIN_4)) == 0)
         {
             GPIOPinWrite(GPIO_PORTA_BASE,GPIO_PIN_2|GPIO_PIN_3,GPIO_PIN_3);          //Green light is ON at 2nd Pedestrian LEDs and red is off
             GPIOPinWrite(GPIO_PORTC_BASE,GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6, GPIO_PIN_6); //Red light is ON,Yellow and green light is OFF at Traffic 1 LEDs
 
             /*If condition loop for 2 times to delay 2 seconds     */
             int i;
-            for(i = 0; i<2 ;i++)
+            for(i = 0; i < PEDESTRIAN_CROSS_S ;i++)
                 {
                     Timer_Delay();                  //wait for 1 second
                 }
