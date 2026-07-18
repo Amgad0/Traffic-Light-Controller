@@ -79,7 +79,7 @@ void Pedestrian_Crossing(void)
 
         }
     /*    If condition check the press on button 2 while button 1 is off and flag is 0     */
-    else if ( (GPIOPinRead(GPIO_PORTA_BASE,GPIO_PIN_3)) == 0)
+    else if ( (GPIOPinRead(GPIO_PORTF_BASE,GPIO_PIN_4)) == 0)
         {
             GPIOPinWrite(GPIO_PORTA_BASE,GPIO_PIN_2|GPIO_PIN_3,GPIO_PIN_3);          //Green light is ON at 2nd Pedestrian LEDs and red is off
             GPIOPinWrite(GPIO_PORTC_BASE,GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6, GPIO_PIN_6); //Red light is ON,Yellow and green light is OFF at Traffic 1 LEDs

@@ -111,13 +111,13 @@ This is a **Code Composer Studio** managed-build project (Eclipse CDT), not a st
    ```
    (A well-known Tiva C gotcha, shared by `PD7`.)
 
+3. **`Pedestrian_Crossing`'s second branch reads the correct button.** It previously tested `GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_3)` — `PA3` is an **LED output**, not the second push button — so it reacted to an LED's own output state instead of a press. It now reads `GPIOPinRead(GPIO_PORTF_BASE, GPIO_PIN_4)`.
+
 ### Known issues (not yet fixed)
 
 These were found by reading the code, not by running it on hardware.
 
-1. **`Pedestrian_Crossing`'s second branch reads the wrong pin.** It tests `GPIOPinRead(GPIO_PORTA_BASE, GPIO_PIN_3)` — `PA3` is configured as an **LED output**, not the second push button (`PF4`). As written, the branch reacts to an LED's output state rather than a button press.
-
-2. **`Timer_Delay` polls the wrong timer's registers.** It configures and enables `TIMER1_BASE`, but clears/polls `TIMER0_ICR_R` / `TIMER0_RIS_R` directly — registers belonging to Timer0, the independent 1 Hz system tick. The delay only appears to work because Timer0 happens to also cycle roughly once per second; it isn't actually gated on Timer1 at all.
+1. **`Timer_Delay` polls the wrong timer's registers.** It configures and enables `TIMER1_BASE`, but clears/polls `TIMER0_ICR_R` / `TIMER0_RIS_R` directly — registers belonging to Timer0, the independent 1 Hz system tick. The delay only appears to work because Timer0 happens to also cycle roughly once per second; it isn't actually gated on Timer1 at all.
 
 ### Further improvements (not yet applied)
 
