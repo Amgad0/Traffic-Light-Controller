@@ -5,7 +5,7 @@
 	<deviceVariant value="Cortex M.TM4C123GH6PM"/>
 	<deviceFamily value="TMS470"/>
 	<deviceEndianness value="little"/>
-	<codegenToolVersion value="20.2.5.LTS"/>
+	<codegenToolVersion value="TICLANG_5.1.1.LTS"/>
 	<isElfFormat value="true"/>
 	<connection value="common/targetdb/connections/Stellaris_ICDI_Connection.xml"/>
 	<linkerCommandFile value="tm4c123gh6pm.cmd"/>
@@ -14,4 +14,5 @@
 	<templateProperties value="id=com.ti.common.project.core.emptyProjectWithMainTemplate"/>
 	<filesToOpen value="main.c"/>
 	<isTargetManual value="false"/>
+	<activeTargetConfiguration value="targetConfigs/Tiva TM4C123GH6PM.ccxml"/>
 </projectOptions>
